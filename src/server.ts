@@ -228,6 +228,6 @@ export function createServer(apiKey: string) {
       );
     }
   }
-
+  debug('itzuli-mcp server running on stdio');
   return server;
 }
