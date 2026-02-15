@@ -1,6 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
+const LOG_LEVEL = process.env.LOG_LEVEL ?? 'info';
+
+function debug(message: string, ...args: unknown[]) {
+  if (LOG_LEVEL === 'debug') {
+    console.error(`[DEBUG] ${message}`, ...args);
+  }
+}
+
 const ITZULI_BASE_URL = 'https://api.itzuli.vicomtech.org/';
 const SUPPORTED_LANGUAGES = ['eu', 'es', 'en', 'fr'] as const;
 
@@ -50,17 +58,21 @@ export function createServer(apiKey: string) {
         };
       }
 
+      const body = {
+        sourcelanguage: sourceLanguage,
+        targetlanguage: targetLanguage,
+        text,
+      };
+      debug('translate request: %O', body);
+
       const response = await fetch(`${ITZULI_BASE_URL}translation/get`, {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({
-          sourcelanguage: sourceLanguage,
-          targetlanguage: targetLanguage,
-          text,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
+        debug('translate error: HTTP %d', response.status);
         return {
           isError: true,
           content: [
@@ -73,6 +85,7 @@ export function createServer(apiKey: string) {
       }
 
       const data = await response.json();
+      debug('translate response: %O', data);
       return {
         content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
       };
@@ -93,11 +106,14 @@ export function createServer(apiKey: string) {
       },
     },
     async () => {
+      debug('get_quota request');
+
       const response = await fetch(`${ITZULI_BASE_URL}quota/get`, {
         headers: authHeaders,
       });
 
       if (!response.ok) {
+        debug('get_quota error: HTTP %d', response.status);
         return {
           isError: true,
           content: [
@@ -110,6 +126,7 @@ export function createServer(apiKey: string) {
       }
 
       const data = await response.json();
+      debug('get_quota response: %O', data);
       return {
         content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
       };
@@ -138,17 +155,21 @@ export function createServer(apiKey: string) {
       },
     },
     async ({ translationId, correction, evaluation }) => {
+      const body = {
+        id: translationId,
+        correction,
+        evaluation,
+      };
+      debug('send_feedback request:', body);
+
       const response = await fetch(`${ITZULI_BASE_URL}translation/feedback`, {
         method: 'POST',
         headers: authHeaders,
-        body: JSON.stringify({
-          id: translationId,
-          correction,
-          evaluation,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
+        debug('send_feedback error: HTTP', response.status);
         return {
           isError: true,
           content: [
@@ -161,6 +182,7 @@ export function createServer(apiKey: string) {
       }
 
       const data = await response.json();
+      debug('send_feedback response:', data);
       return {
         content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
       };

@@ -102,11 +102,20 @@ The server uses stdio transport. Run it with the `ITZULI_API_KEY` environment va
 ITZULI_API_KEY=your-api-key npx tsx src/index.ts
 ```
 
+## Debugging
+
+Set `LOG_LEVEL=debug` to log request and response bodies to stderr:
+
+```sh
+LOG_LEVEL=debug ITZULI_API_KEY=your-api-key npx tsx src/index.ts
+```
+
 ## Development
 
 ```sh
 npx tsx src/index.ts  # Run the server directly from TypeScript
 npm run build         # Type-check and compile to dist/
+npm test              # Run unit tests
 ```
 
 Formatting and linting are handled by [Biome](https://biomejs.dev/):
