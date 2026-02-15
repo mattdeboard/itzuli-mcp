@@ -16,6 +16,8 @@ Translate text between supported languages.
 
 **Language codes:** `eu` (Basque), `es` (Spanish), `en` (English), `fr` (French)
 
+Basque (`eu`) must be either the source or target language. Supported pairs: `eu<->es`, `eu<->en`, `eu<->fr`.
+
 ### `get_quota`
 
 Check the current API usage quota. Takes no parameters.
@@ -29,6 +31,19 @@ Submit a correction or evaluation for a previous translation.
 | `translationId` | string | The ID of the translation to provide feedback on |
 | `correction` | string | The corrected translation text |
 | `evaluation` | number | Numeric evaluation score |
+
+## Prompts
+
+The server provides translation prompts using the `source@target` naming convention. Each prompt takes a single `text` argument and instructs the model to translate it using the `translate` tool.
+
+| Prompt | Description |
+|--------|-------------|
+| `eu@es` | Basque to Spanish |
+| `es@eu` | Spanish to Basque |
+| `eu@en` | Basque to English |
+| `en@eu` | English to Basque |
+| `eu@fr` | Basque to French |
+| `fr@eu` | French to Basque |
 
 ## Prerequisites
 
