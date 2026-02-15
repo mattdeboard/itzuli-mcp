@@ -8,11 +8,11 @@ An MCP (Model Context Protocol) server for [Itzuli](https://www.batua.eus/en/), 
 
 Translate text between supported languages.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `text` | string | The text to translate |
-| `sourceLanguage` | `eu` \| `es` \| `en` \| `fr` | Source language code |
-| `targetLanguage` | `eu` \| `es` \| `en` \| `fr` | Target language code |
+| Parameter        | Type                         | Description           |
+| ---------------- | ---------------------------- | --------------------- |
+| `text`           | string                       | The text to translate |
+| `sourceLanguage` | `eu` \| `es` \| `en` \| `fr` | Source language code  |
+| `targetLanguage` | `eu` \| `es` \| `en` \| `fr` | Target language code  |
 
 **Language codes:** `eu` (Basque), `es` (Spanish), `en` (English), `fr` (French)
 
@@ -26,24 +26,28 @@ Check the current API usage quota. Takes no parameters.
 
 Submit a correction or evaluation for a previous translation.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter       | Type   | Description                                      |
+| --------------- | ------ | ------------------------------------------------ |
 | `translationId` | string | The ID of the translation to provide feedback on |
-| `correction` | string | The corrected translation text |
-| `evaluation` | number | Numeric evaluation score |
+| `correction`    | string | The corrected translation text                   |
+| `evaluation`    | number | Numeric evaluation score                         |
 
 ## Prompts
 
 The server provides translation prompts using the `source@target` naming convention. Each prompt takes a single `text` argument and instructs the model to translate it using the `translate` tool.
 
-| Prompt | Description |
-|--------|-------------|
+| Prompt  | Description       |
+| ------- | ----------------- |
 | `eu@es` | Basque to Spanish |
 | `es@eu` | Spanish to Basque |
 | `eu@en` | Basque to English |
 | `en@eu` | English to Basque |
-| `eu@fr` | Basque to French |
-| `fr@eu` | French to Basque |
+| `eu@fr` | Basque to French  |
+| `fr@eu` | French to Basque  |
+
+### Example
+
+`eu@es Ez dut euskal kanturik ezagutzen`
 
 ## Prerequisites
 
