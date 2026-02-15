@@ -39,7 +39,6 @@ Submit a correction or evaluation for a previous translation.
 
 ```sh
 npm install
-npm run build
 ```
 
 ## Configuration
@@ -52,8 +51,8 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 {
   "mcpServers": {
     "itzuli": {
-      "command": "node",
-      "args": ["/absolute/path/to/itzuli-mcp/dist/index.js"],
+      "command": "/absolute/path/to/itzuli-mcp/node_modules/.bin/tsx",
+      "args": ["/absolute/path/to/itzuli-mcp/src/index.ts"],
       "env": {
         "ITZULI_API_KEY": "your-api-key"
       }
@@ -67,7 +66,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 Add to your Claude Code MCP settings:
 
 ```sh
-claude mcp add itzuli -- node /absolute/path/to/itzuli-mcp/dist/index.js
+claude mcp add itzuli -- /absolute/path/to/itzuli-mcp/node_modules/.bin/tsx /absolute/path/to/itzuli-mcp/src/index.ts
 ```
 
 Set the environment variable before running:
@@ -81,14 +80,14 @@ export ITZULI_API_KEY=your-api-key
 The server uses stdio transport. Run it with the `ITZULI_API_KEY` environment variable set:
 
 ```sh
-ITZULI_API_KEY=your-api-key node dist/index.js
+ITZULI_API_KEY=your-api-key npx tsx src/index.ts
 ```
 
 ## Development
 
 ```sh
-npm run build    # Compile TypeScript
-npm start        # Run the server
+npx tsx src/index.ts  # Run the server directly from TypeScript
+npm run build         # Type-check and compile to dist/
 ```
 
 Formatting and linting are handled by [Biome](https://biomejs.dev/):
