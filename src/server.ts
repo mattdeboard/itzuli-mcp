@@ -6,7 +6,7 @@ const SUPPORTED_LANGUAGES = ['eu', 'es', 'en', 'fr'] as const;
 
 export function createServer(apiKey: string) {
   const authHeaders = {
-    'Authorization': `Bearer ${apiKey}`,
+    Authorization: `Bearer ${apiKey}`,
     'Content-Type': 'application/json',
   };
 
@@ -18,11 +18,16 @@ export function createServer(apiKey: string) {
   server.registerTool(
     'translate',
     {
-      description: 'Translate text between Basque (eu), Spanish (es), English (en), and French (fr)',
+      description:
+        'Translate text to or from Basque (eu). Basque must be either the source or target language. Supported pairs: eu<->es, eu<->en, eu<->fr.',
       inputSchema: {
         text: z.string().describe('The text to translate'),
-        sourceLanguage: z.enum(SUPPORTED_LANGUAGES).describe('Source language code'),
-        targetLanguage: z.enum(SUPPORTED_LANGUAGES).describe('Target language code'),
+        sourceLanguage: z
+          .enum(SUPPORTED_LANGUAGES)
+          .describe('Source language code'),
+        targetLanguage: z
+          .enum(SUPPORTED_LANGUAGES)
+          .describe('Target language code'),
       },
       annotations: {
         title: 'Translate Text',
@@ -33,6 +38,18 @@ export function createServer(apiKey: string) {
       },
     },
     async ({ text, sourceLanguage, targetLanguage }) => {
+      if (sourceLanguage !== 'eu' && targetLanguage !== 'eu') {
+        return {
+          isError: true,
+          content: [
+            {
+              type: 'text',
+              text: 'Basque (eu) must be either the source or target language. Supported pairs: eu<->es, eu<->en, eu<->fr.',
+            },
+          ],
+        };
+      }
+
       const response = await fetch(`${ITZULI_BASE_URL}translation/get`, {
         method: 'POST',
         headers: authHeaders,
@@ -46,7 +63,12 @@ export function createServer(apiKey: string) {
       if (!response.ok) {
         return {
           isError: true,
-          content: [{ type: 'text', text: `Translation failed: HTTP ${response.status}` }],
+          content: [
+            {
+              type: 'text',
+              text: `Translation failed: HTTP ${response.status}`,
+            },
+          ],
         };
       }
 
@@ -60,7 +82,8 @@ export function createServer(apiKey: string) {
   server.registerTool(
     'get_quota',
     {
-      description: 'Check the current API usage quota for the Itzuli translation service',
+      description:
+        'Check the current API usage quota for the Itzuli translation service',
       annotations: {
         title: 'Get API Quota',
         readOnlyHint: true,
@@ -77,7 +100,12 @@ export function createServer(apiKey: string) {
       if (!response.ok) {
         return {
           isError: true,
-          content: [{ type: 'text', text: `Quota check failed: HTTP ${response.status}` }],
+          content: [
+            {
+              type: 'text',
+              text: `Quota check failed: HTTP ${response.status}`,
+            },
+          ],
         };
       }
 
@@ -93,9 +121,13 @@ export function createServer(apiKey: string) {
     {
       description: 'Submit feedback or a correction for a previous translation',
       inputSchema: {
-        translationId: z.string().describe('The ID of the translation to provide feedback on'),
+        translationId: z
+          .string()
+          .describe('The ID of the translation to provide feedback on'),
         correction: z.string().describe('The corrected translation text'),
-        evaluation: z.number().describe('Numeric evaluation score for the translation'),
+        evaluation: z
+          .number()
+          .describe('Numeric evaluation score for the translation'),
       },
       annotations: {
         title: 'Send Translation Feedback',
@@ -119,7 +151,12 @@ export function createServer(apiKey: string) {
       if (!response.ok) {
         return {
           isError: true,
-          content: [{ type: 'text', text: `Feedback submission failed: HTTP ${response.status}` }],
+          content: [
+            {
+              type: 'text',
+              text: `Feedback submission failed: HTTP ${response.status}`,
+            },
+          ],
         };
       }
 
@@ -129,6 +166,46 @@ export function createServer(apiKey: string) {
       };
     },
   );
+
+  const LANGUAGE_NAMES: Record<(typeof SUPPORTED_LANGUAGES)[number], string> = {
+    eu: 'Basque',
+    es: 'Spanish',
+    en: 'English',
+    fr: 'French',
+  };
+
+  for (const other of SUPPORTED_LANGUAGES.filter((lang) => lang !== 'eu')) {
+    // Register `<fromLang>@<toLang>` prompts. These prompts work like:
+    // eu@es <text> -> translate from Euskara to Spanish
+    // fr@eu <text> -> translate from French to Euskara
+    // Reminder: `eu` must either be in the `fromLang` or `toLang` position.
+    for (const [from, to] of [
+      [`eu`, other],
+      [other, `eu`],
+    ] as const) {
+      server.registerPrompt(
+        `${from}@${to}`,
+        {
+          title: `${LANGUAGE_NAMES[from]} to ${LANGUAGE_NAMES[to]}`,
+          description: `Translate text from ${LANGUAGE_NAMES[from]} to ${LANGUAGE_NAMES[to]}`,
+          argsSchema: {
+            text: z.string().describe('The text to translate'),
+          },
+        },
+        ({ text }) => ({
+          messages: [
+            {
+              role: 'user',
+              content: {
+                type: 'text',
+                text: `Translate the following ${LANGUAGE_NAMES[from]} text to ${LANGUAGE_NAMES[to]} using the translate tool, then return only the translated text.\n\n${text}`,
+              },
+            },
+          ],
+        }),
+      );
+    }
+  }
 
   return server;
 }

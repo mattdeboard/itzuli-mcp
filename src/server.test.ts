@@ -91,6 +91,21 @@ describe('itzuli-mcp', () => {
       const content = result.content as Array<{ type: string; text: string }>;
       expect(content[0]?.text).toBe('Translation failed: HTTP 401');
     });
+
+    it('rejects translation without Basque on either side', async () => {
+      const result = await client.callTool({
+        name: 'translate',
+        arguments: {
+          text: 'Hello!',
+          sourceLanguage: 'en',
+          targetLanguage: 'es',
+        },
+      });
+
+      expect(result.isError).toBe(true);
+      const content = result.content as Array<{ type: string; text: string }>;
+      expect(content[0]?.text).toContain('Basque (eu) must be either the source or target language');
+    });
   });
 
   describe('get_quota', () => {
